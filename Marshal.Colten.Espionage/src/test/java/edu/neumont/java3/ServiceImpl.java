@@ -2,6 +2,7 @@ package edu.neumont.java3;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -14,7 +15,7 @@ import org.apache.geronimo.mail.util.Base64;
 public class ServiceImpl implements EspionageService{
 
 	@WebMethod(action="/crack")
-	public String crack(@WebParam Long number) {
+	public String crack(@WebParam BigInteger number, @WebParam BigInteger e) {
 		String output = "";
 		String hash = Encode("abc123", "password");
 		try {
@@ -36,10 +37,17 @@ public class ServiceImpl implements EspionageService{
 			}
 		} catch (MalformedURLException me) {
 			System.out.println(me.getMessage());
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
+		} catch (Exception ex) {
+			System.out.println(ex.getMessage());
 		}
-		return output;
+		String[] toBigInts = output.split("<yourlist>");
+		String[] p = toBigInts[1].split("</yourlist>");
+		String[] q = toBigInts[2].split("</yourlist>");
+		BigInteger P = new BigInteger(p[0]);
+		BigInteger Q = new BigInteger(q[0]);
+		BigInteger D = e.modInverse((P.subtract(new BigInteger("1"))).multiply((Q.subtract(new BigInteger("1")))));
+		
+		return "N = "+number+" D = "+D;
 	}
 	public String Encode(String username, String password) {
 		String concated = username + ":" + password;
@@ -48,3 +56,8 @@ public class ServiceImpl implements EspionageService{
 	}
 }
 
+/*
+ * factor n to p and q
+ * get totient (p-1)(q-1)
+ * e.modinverse(totient) = d
+ */
